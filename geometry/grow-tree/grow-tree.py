@@ -2,7 +2,32 @@
 import os
 import placentagen as pg
 import numpy as np
- 
+
+def export_nodes_to_Manc_fmt(node_array, path):
+    node_file = open(path + '.nodes','w')
+    for n in node_array:
+        node_file.write('%d,%f,%f,%f\n'%(int(n[0]),n[1],n[2],n[3]))
+    node_file.close()
+
+def export_elems_to_Manc_fmt(elem_array, path, radius):
+    elem_file = open(path + '.branches','w')
+    i = 0
+    for e in elem_array:
+        elem_file.write('%d,%d,%d,%f\n,'%(e[0],e[1],e[2],radius[i]))
+        i += 1
+    elem_file.close()   
+    
+def export_terminals_to_Manc_fmt(tnode_array, path, pressure=None):
+    i = 0
+    tnode_file = open(path + '.termnodes','w')
+    for n in tnode_array:
+        tnode_file.write('%d'%int(n[0]))
+        if pressure != None:
+            tnode_file.write(',\'g\',%f'%pressure[i])
+        i += 1
+    tnode_file.close()
+
+
 ##########################################
 # Parameters that define placental shape #
 ##########################################
@@ -143,9 +168,6 @@ radii = pg.define_radius_by_order(full_geom['nodes'], full_geom['elems'], system
 # Export the final results
 if(export_results or export_intermediates):
     export_file = export_directory + '/full_tree'
-    export_radii = export_directory + '/radii'
-    pg.export_ex_coords(full_geom['nodes'],'placenta', export_file,'exnode')
-    pg.export_exelem_1d(full_geom['elems'],'placenta', export_file)
-    pg.export_exfield_1d_linear(radii, 'placenta','radius', export_radii)
-    export_file = export_directory + '/terminals'
-    pg.export_ex_coords(full_geom['term_loc'],'villous',export_file,'exdata')
+    export_nodes_to_Manc_fmt(full_geom['nodes'], export_file)
+    export_elems_to_Manc_fmt(full_geom['elems'], export_file, radii)
+    export_terminals_to_Manc_fmt(full_geom['term_loc'], export_file)
